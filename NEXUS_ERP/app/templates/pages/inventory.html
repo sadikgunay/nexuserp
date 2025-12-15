@@ -1,0 +1,345 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100 overflow-hidden">
+            <div class="card-body d-flex align-items-center justify-content-between p-4">
+                <div>
+                    <div class="text-uppercase fw-bold text-muted small mb-1">Toplam Demirbaş</div>
+                    <h2 class="fw-bold text-dark mb-0">{{ stats.total_items }}</h2>
+                </div>
+                <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary"><i class="fa-solid fa-cubes fa-2x"></i></div>
+            </div>
+            <div class="position-absolute bottom-0 start-0 w-100 border-bottom border-4 border-primary"></div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100 overflow-hidden">
+            <div class="card-body d-flex align-items-center justify-content-between p-4">
+                <div>
+                    <div class="text-uppercase fw-bold text-muted small mb-1">Toplam Değer</div>
+                    <h2 class="fw-bold text-success mb-0">₺{{ "{:,.2f}".format(stats.total_value) }}</h2>
+                </div>
+                <div class="bg-success bg-opacity-10 p-3 rounded-circle text-success"><i class="fa-solid fa-coins fa-2x"></i></div>
+            </div>
+            <div class="position-absolute bottom-0 start-0 w-100 border-bottom border-4 border-success"></div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100 overflow-hidden">
+            <div class="card-body d-flex align-items-center justify-content-between p-4">
+                <div>
+                    <div class="text-uppercase fw-bold text-muted small mb-1">Zimmetli</div>
+                    <h2 class="fw-bold text-warning mb-0">{{ stats.assigned_count }}</h2>
+                </div>
+                <div class="bg-warning bg-opacity-10 p-3 rounded-circle text-warning"><i class="fa-solid fa-user-check fa-2x"></i></div>
+            </div>
+            <div class="position-absolute bottom-0 start-0 w-100 border-bottom border-4 border-warning"></div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100 overflow-hidden">
+            <div class="card-body d-flex align-items-center justify-content-between p-4">
+                <div>
+                    <div class="text-uppercase fw-bold text-muted small mb-1">Arızalı / Hurda</div>
+                    <h2 class="fw-bold text-danger mb-0">{{ stats.broken_count }}</h2>
+                </div>
+                <div class="bg-danger bg-opacity-10 p-3 rounded-circle text-danger"><i class="fa-solid fa-triangle-exclamation fa-2x"></i></div>
+            </div>
+            <div class="position-absolute bottom-0 start-0 w-100 border-bottom border-4 border-danger"></div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-5">
+    <div class="card-header bg-white py-4 px-4 d-flex justify-content-between align-items-center border-bottom">
+        <div>
+            <h5 class="fw-bold mb-1 text-dark">Envanter Listesi</h5>
+            <p class="text-muted small mb-0">Tüm demirbaşlarınızı buradan yönetin, filtreleyin ve raporlayın.</p>
+        </div>
+        <button class="btn btn-primary px-4 py-2" data-bs-toggle="modal" data-bs-target="#addItemModal">
+            <i class="fa-solid fa-plus me-2"></i> Yeni Varlık Ekle
+        </button>
+    </div>
+    
+    <div class="card-body bg-light bg-opacity-50 border-bottom px-4 py-3">
+        <form action="{{ url_for('inventory.index') }}" method="GET" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small fw-bold text-dark mb-1">Kategori</label>
+                <select name="category" class="form-select form-select-sm shadow-none border-secondary-subtle text-dark">
+                    <option value="">Tümü</option>
+                    {% for c in dropdowns.categories %}
+                        <option value="{{ c }}" {% if request.args.get('category') == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-bold text-dark mb-1">Durum</label>
+                <select name="status" class="form-select form-select-sm shadow-none border-secondary-subtle text-dark">
+                    <option value="">Tümü</option>
+                    <option value="Aktif" {% if request.args.get('status') == 'Aktif' %}selected{% endif %}>Aktif</option>
+                    <option value="Depoda" {% if request.args.get('status') == 'Depoda' %}selected{% endif %}>Depoda</option>
+                    <option value="Arızalı" {% if request.args.get('status') == 'Arızalı' %}selected{% endif %}>Arızalı</option>
+                    <option value="Hurda" {% if request.args.get('status') == 'Hurda' %}selected{% endif %}>Hurda</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-bold text-dark mb-1">Departman</label>
+                <select name="department" class="form-select form-select-sm shadow-none border-secondary-subtle text-dark">
+                    <option value="">Tümü</option>
+                    {% for d in dropdowns.departments %}
+                        <option value="{{ d }}" {% if request.args.get('department') == d %}selected{% endif %}>{{ d }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-dark px-3 shadow-sm text-white">
+                    <i class="fa-solid fa-filter me-1"></i> Filtrele
+                </button>
+                <a href="{{ url_for('inventory.export_inventory', **request.args) }}" class="btn btn-sm btn-success px-3 shadow-sm text-white" title="Excel Olarak İndir">
+                    <i class="fa-solid fa-file-excel me-1"></i> Excel
+                </a>
+                <a href="{{ url_for('inventory.index') }}" class="btn btn-sm btn-light border px-3 text-dark" title="Sıfırla">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table id="inventoryTable" class="table table-hover align-middle mb-0" style="font-size: 0.92rem;">
+            <thead class="bg-light">
+                <tr>
+                    <th class="ps-4 py-3 text-muted fw-bold text-uppercase" style="font-size: 0.75rem;">ID</th>
+                    <th class="py-3 text-muted fw-bold text-uppercase" style="font-size: 0.75rem;">Ürün Bilgisi</th>
+                    <th class="py-3 text-muted fw-bold text-uppercase" style="font-size: 0.75rem;">Kategori</th>
+                    <th class="py-3 text-muted fw-bold text-uppercase" style="font-size: 0.75rem;">Lokasyon / Zimmet</th>
+                    <th class="py-3 text-muted fw-bold text-uppercase" style="font-size: 0.75rem;">Finansal</th>
+                    <th class="py-3 text-muted fw-bold text-uppercase" style="font-size: 0.75rem;">Durum</th>
+                    <th class="text-end pe-4 py-3 text-muted fw-bold text-uppercase" style="font-size: 0.75rem;">İşlem</th>
+                </tr>
+            </thead>
+            <tbody class="border-top-0">
+                {% for item in items %}
+                <tr>
+                    <td class="ps-4 fw-bold text-muted">#{{ item.id }}</td>
+                    <td>
+                        <div class="d-flex align-items-center py-1">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded p-2 me-3">
+                                <i class="fa-solid fa-box-open"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark">{{ item.name }}</div>
+                                <div class="text-muted small">{{ item.brand }} {{ item.model }}</div>
+                                <div class="text-muted small font-monospace" style="font-size: 0.75rem;">S/N: {{ item.serial_no or '-' }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="badge bg-light text-dark border fw-normal px-2 py-1">{{ item.category }}</span></td>
+                    <td>
+                        {% if item.assigned_to %}
+                            <div class="fw-bold text-dark small"><i class="fa-solid fa-user me-1 text-primary"></i> {{ item.assigned_to }}</div>
+                            <div class="text-muted small ms-3">{{ item.department or '-' }}</div>
+                        {% else %}
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle px-2">Depoda</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.price %}
+                            <div class="fw-bold text-dark">{{ "{:,.2f}".format(item.price) }} <small class="text-muted">{{ item.currency }}</small></div>
+                            <div class="text-muted small">{{ item.vendor or '' }}</div>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.status == 'Aktif' %}
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle px-2 py-1">Aktif</span>
+                        {% elif item.status == 'Arızalı' %}
+                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle px-2 py-1">Arızalı</span>
+                        {% elif item.status == 'Depoda' %}
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle px-2 py-1">Depoda</span>
+                        {% else %}
+                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle px-2 py-1">{{ item.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end pe-4">
+                        <a href="{{ url_for('inventory.item_details', id=item.id) }}" class="btn btn-sm btn-light border hover-shadow" title="Detay">
+                            <i class="fa-solid fa-chevron-right text-muted"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer bg-white border-top-0 py-3"></div>
+</div>
+
+<div class="modal fade" id="addItemModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-plus-circle me-2"></i>Yeni Varlık Ekle</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <form action="{{ url_for('inventory.add_item') }}" method="POST">
+                <div class="modal-body p-4 bg-light">
+                    
+                    <ul class="nav nav-pills mb-4 nav-justified bg-white p-1 rounded border shadow-sm" id="itemTab" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active fw-bold text-dark" data-bs-toggle="tab" data-bs-target="#general" type="button">Genel Bilgiler</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link fw-bold text-dark" data-bs-toggle="tab" data-bs-target="#financial" type="button">Finansal & Tarih</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link fw-bold text-dark" data-bs-toggle="tab" data-bs-target="#location" type="button">Lokasyon & Zimmet</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="general">
+                            <div class="card card-body border-0 shadow-sm">
+                                <div class="row g-3">
+                                    <div class="col-md-12">
+                                        <label class="form-label small text-muted fw-bold">Ürün Adı / Tanımı <span class="text-danger">*</span></label>
+                                        <input type="text" name="name" class="form-control text-dark" placeholder="Örn: MacBook Pro M2" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-muted fw-bold">Kategori</label>
+                                        <select name="category" class="form-select select2-init text-dark">
+                                            {% for c in dropdowns.categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-muted fw-bold">Marka</label>
+                                        <select name="brand" class="form-select select2-tags text-dark">
+                                            <option value="">Seçiniz...</option>
+                                            {% for b in dropdowns.brands %}<option value="{{ b }}">{{ b }}</option>{% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-muted fw-bold">Model</label>
+                                        <input type="text" name="model" class="form-control text-dark">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-muted fw-bold">Seri No (S/N)</label>
+                                        <input type="text" name="serial_no" class="form-control text-dark font-monospace">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-muted fw-bold">Etiket Kodu</label>
+                                        <input type="text" name="asset_tag" class="form-control text-dark font-monospace" placeholder="Örn: INV-001">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-muted fw-bold">Durum</label>
+                                        <select name="status" class="form-select text-dark">
+                                            <option value="Aktif">Aktif</option>
+                                            <option value="Depoda">Depoda</option>
+                                            <option value="Arızalı">Arızalı</option>
+                                            <option value="Hurda">Hurda</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="financial">
+                            <div class="card card-body border-0 shadow-sm">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label small text-muted fw-bold">Fiyat</label>
+                                        <input type="number" step="0.01" name="price" class="form-control text-dark" placeholder="0.00">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label small text-muted fw-bold">Para Birimi</label>
+                                        <select name="currency" class="form-select text-dark">
+                                            <option value="TL">₺ TL</option>
+                                            
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-muted fw-bold">Tedarikçi</label>
+                                        <select name="vendor" class="form-select select2-tags text-dark">
+                                            <option value="">Seçiniz...</option>
+                                            {% for v in dropdowns.vendors %}<option value="{{ v }}">{{ v }}</option>{% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-muted fw-bold">Satın Alma Tarihi</label>
+                                        <input type="text" name="purchase_date" class="form-control datepicker text-dark">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-muted fw-bold">Garanti Bitiş</label>
+                                        <input type="text" name="warranty_date" class="form-control datepicker text-dark">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="location">
+                            <div class="card card-body border-0 shadow-sm">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-muted fw-bold">Zimmetlenecek Kişi</label>
+                                        <input type="text" name="assigned_to" class="form-control text-dark" placeholder="Ad Soyad">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-muted fw-bold">Departman</label>
+                                        <select name="department" class="form-select select2-tags text-dark">
+                                            <option value="">Seçiniz...</option>
+                                            {% for d in dropdowns.departments %}<option value="{{ d }}">{{ d }}</option>{% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-muted fw-bold">Lokasyon</label>
+                                        <select name="location" class="form-select select2-tags text-dark">
+                                            <option value="">Seçiniz...</option>
+                                            {% for l in dropdowns.locations %}<option value="{{ l }}">{{ l }}</option>{% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label small text-muted fw-bold">Notlar</label>
+                                        <textarea name="notes" class="form-control text-dark" rows="3"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-white border-top-0">
+                    <button type="button" class="btn btn-light border text-dark" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#inventoryTable').DataTable({
+            language: { url: "//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json" },
+            dom: 'rtip', 
+            pageLength: 10,
+            responsive: true,
+            columnDefs: [
+                { orderable: false, targets: -1 } // İşlem kolonunu sıralama dışı bırak
+            ]
+        });
+
+        // Modal açıldığında Select2'yi düzelt (Bazen genişlik sorunu olur)
+        $('.select2-init').select2({ theme: 'bootstrap-5', dropdownParent: $('#addItemModal') });
+        $('.select2-tags').select2({ theme: 'bootstrap-5', tags: true, dropdownParent: $('#addItemModal'), placeholder: "Seçiniz veya Yazınız" });
+        
+        $('.datepicker').flatpickr({ locale: "tr", dateFormat: "Y-m-d", allowInput: true });
+    });
+</script>
+{% endblock %}

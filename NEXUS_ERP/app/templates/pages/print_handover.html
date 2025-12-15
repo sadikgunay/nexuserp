@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Zimmet Tutanağı - {{ item.asset_tag }}</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* GENEL SAYFA AYARLARI */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Ekranda gri, kağıtta beyaz */
+            margin: 0;
+            padding: 40px;
+            color: #1f2937;
+        }
+
+        /* KAĞIT GÖRÜNÜMÜ (A4) */
+        .page-container {
+            background-color: white;
+            width: 210mm; /* A4 Genişlik */
+            min-height: 297mm; /* A4 Yükseklik */
+            margin: 0 auto;
+            padding: 40px 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        /* BAŞLIK ALANI */
+        header {
+            border-bottom: 2px solid #1f2937;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+        }
+        .brand {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1f2937;
+            letter-spacing: -0.5px;
+        }
+        .doc-title {
+            text-align: right;
+        }
+        .doc-title h1 {
+            margin: 0;
+            font-size: 20px;
+            text-transform: uppercase;
+        }
+        .doc-meta {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+        /* TABLO TASARIMI */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .info-table th {
+            text-align: left;
+            padding: 12px;
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #6b7280;
+            width: 30%;
+        }
+        .info-table td {
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            color: #374151;
+            border-left: 4px solid #3b82f6; /* Mavi Çizgi */
+            padding-left: 10px;
+        }
+
+        /* TAAHHÜT METNİ */
+        .legal-text {
+            font-size: 12px;
+            line-height: 1.6;
+            text-align: justify;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fcfcfc;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+        }
+
+        /* İMZA ALANI */
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 60px;
+        }
+        .sign-box {
+            width: 40%;
+            text-align: center;
+        }
+        .sign-line {
+            border-top: 1px solid #000;
+            margin-top: 50px;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .sign-title {
+            font-weight: 700;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .sign-desc {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* BUTONLAR (Ekranda görünür, kağıtta gizlenir) */
+        .action-bar {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .btn-print {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-print:hover { background-color: #2563eb; }
+
+        /* YAZICI AYARLARI (@media print) */
+        @media print {
+            body { 
+                background-color: white; 
+                padding: 0; 
+                -webkit-print-color-adjust: exact; 
+            }
+            .page-container {
+                box-shadow: none;
+                padding: 20px 40px;
+                margin: 0;
+                width: 100%;
+            }
+            .action-bar { display: none !important; }
+            .info-table th { background-color: #f3f4f6 !important; } /* Gri arka planı zorla */
+        }
+    </style>
+</head>
+<body onload="setTimeout(function(){ window.print(); }, 500);">
+
+    <div class="action-bar">
+        <a href="#" onclick="window.print(); return false;" class="btn-print">
+            <i class="fa-solid fa-print"></i> Yazdır
+        </a>
+        <a href="javascript:window.close();" style="margin-left: 10px; color: #666; text-decoration: none; font-size: 14px;">Pencereyi Kapat</a>
+    </div>
+
+    <div class="page-container">
+        <header>
+            <div class="brand">
+                <i class="fa-solid fa-cube"></i> NEXUS ERP
+            </div>
+            <div class="doc-title">
+                <h1>Zimmet Teslim Tutanağı</h1>
+                <div class="doc-meta">Düzenleme Tarihi: {{ date }}</div>
+            </div>
+        </header>
+
+        <div class="section-title">Demirbaş Bilgileri</div>
+        <table class="info-table">
+            <tr>
+                <th>Demirbaş Kodu (ID)</th>
+                <td><strong>#{{ item.id }}</strong> / {{ item.asset_tag or '---' }}</td>
+            </tr>
+            <tr>
+                <th>Ürün / Model</th>
+                <td>{{ item.brand }} {{ item.model }}</td>
+            </tr>
+            <tr>
+                <th>Cihaz Tanımı</th>
+                <td>{{ item.name }}</td>
+            </tr>
+            <tr>
+                <th>Seri Numarası (S/N)</th>
+                <td style="font-family: monospace; letter-spacing: 1px;">{{ item.serial_no or 'BELİRTİLMEMİŞ' }}</td>
+            </tr>
+            <tr>
+                <th>Mevcut Durumu</th>
+                <td>{{ item.status }}</td>
+            </tr>
+        </table>
+
+        <div class="section-title" style="margin-top: 30px;">Zimmet Sahibi / Lokasyon</div>
+        <table class="info-table">
+            <tr>
+                <th>Teslim Alan Personel</th>
+                <td>{{ item.assigned_to or 'BELİRTİLMEMİŞ' }}</td>
+            </tr>
+            <tr>
+                <th>Departman</th>
+                <td>{{ item.department or '---' }}</td>
+            </tr>
+            <tr>
+                <th>Fiziksel Lokasyon</th>
+                <td>{{ item.location or 'Merkez Ofis' }}</td>
+            </tr>
+            <tr>
+                <th>Teslim Tarihi</th>
+                <td>{{ date }}</td>
+            </tr>
+        </table>
+
+        <div class="legal-text">
+            <strong>Taahhütname:</strong><br>
+            Yukarıda özellikleri ve seri numarası belirtilen demirbaş malzemeyi; sağlam, eksiksiz ve çalışır vaziyette teslim aldım. 
+            Kullanımım süresince malzemeye gerekli özeni göstereceğimi, iş akdinin sonlanması veya departman değişikliği durumunda 
+            ilgili birime eksiksiz olarak iade edeceğimi, kullanıcı hatasından kaynaklanan arıza veya kayıp durumunda 
+            sorumluluğu kabul ettiğimi beyan ve taahhüt ederim.
+        </div>
+
+        <div class="signature-section">
+            <div class="sign-box">
+                <div class="sign-title">TESLİM EDEN</div>
+                <div class="sign-desc">Firma / Envanter Yetkilisi</div>
+                <div style="height: 60px;"></div> <div class="sign-line"></div>
+                <div style="font-size: 12px; margin-top: 5px;">İmza</div>
+            </div>
+
+            <div class="sign-box">
+                <div class="sign-title">TESLİM ALAN</div>
+                <div class="sign-desc">{{ item.assigned_to }}</div>
+                <div style="height: 60px;"></div> <div class="sign-line"></div>
+                <div style="font-size: 12px; margin-top: 5px;">İmza</div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 50px; font-size: 10px; color: #9ca3af; border-top: 1px solid #eee; padding-top: 10px;">
+            Bu belge Nexus ERP sistemi üzerinden otomatik olarak oluşturulmuştur. | Belge ID: {{ item.id }}-{{ item.asset_tag }}
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,358 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('inventory.index') }}" class="btn btn-sm btn-light border text-muted">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <h1 class="h3 mb-0 fw-bold text-dark">{{ item.name }}</h1>
+            
+            {% if item.status == 'Aktif' %}
+                <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle px-3">Aktif</span>
+            {% elif item.status == 'Arızalı' %}
+                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle px-3">Arızalı</span>
+            {% elif item.status == 'Depoda' %}
+                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle px-3">Depoda</span>
+            {% else %}
+                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle px-3">{{ item.status }}</span>
+            {% endif %}
+        </div>
+        <p class="text-muted small mb-0 mt-1 ms-5">Seri No: <span class="font-monospace text-dark">{{ item.serial_no or 'Yok' }}</span> | ID: #{{ item.id }}</p>
+    </div>
+    
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('inventory.print_handover', id=item.id) }}" target="_blank" class="btn btn-outline-dark btn-sm shadow-sm">
+            <i class="fa-solid fa-print me-2"></i>Tutanak Yazdır
+        </a>
+        <button class="btn btn-primary btn-sm shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#editModal">
+            <i class="fa-solid fa-pen-to-square me-2"></i>Düzenle
+        </button>
+        <button class="btn btn-danger btn-sm shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#deleteModal">
+            <i class="fa-regular fa-trash-can"></i>
+        </button>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-circle-info me-2 text-primary"></i>Genel Bilgiler</h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <label class="small text-muted fw-bold d-block mb-1">Marka</label>
+                        <span class="text-dark fw-medium">{{ item.brand or '-' }}</span>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small text-muted fw-bold d-block mb-1">Model</label>
+                        <span class="text-dark fw-medium">{{ item.model or '-' }}</span>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small text-muted fw-bold d-block mb-1">Kategori</label>
+                        <span class="badge bg-light text-dark border">{{ item.category }}</span>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small text-muted fw-bold d-block mb-1">Etiket Kodu</label>
+                        <span class="font-monospace text-dark">{{ item.asset_tag or '-' }}</span>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small text-muted fw-bold d-block mb-1">Ekleyen</label>
+                        <span class="text-dark">{{ item.added_by }}</span>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small text-muted fw-bold d-block mb-1">Oluşturma Tarihi</label>
+                        <span class="text-dark">{{ item.created_at.strftime('%d.%m.%Y') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <h6 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-coins me-2 text-success"></i>Finansal Detaylar</h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted small">Fiyat:</span>
+                            <span class="fw-bold text-dark">{{ "{:,.2f}".format(item.price) }} {{ item.currency }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted small">Tedarikçi:</span>
+                            <span class="text-dark">{{ item.vendor or '-' }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted small">Satın Alma:</span>
+                            <span class="text-dark">{{ item.purchase_date or '-' }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted small">Garanti Bitiş:</span>
+                            <span class="text-danger fw-medium">{{ item.warranty_date or '-' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <h6 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-location-dot me-2 text-warning"></i>Konum & Zimmet</h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <label class="small text-muted d-block mb-1">Zimmetli Kişi</label>
+                            {% if item.assigned_to %}
+                                <div class="d-flex align-items-center bg-light p-2 rounded border">
+                                    <div class="bg-white p-2 rounded-circle shadow-sm me-3 text-primary"><i class="fa-solid fa-user"></i></div>
+                                    <div class="fw-bold text-dark">{{ item.assigned_to }}</div>
+                                </div>
+                            {% else %}
+                                <span class="text-muted fst-italic">Zimmetlenmemiş</span>
+                            {% endif %}
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <label class="small text-muted d-block mb-1">Departman</label>
+                                <span class="text-dark">{{ item.department or '-' }}</span>
+                            </div>
+                            <div class="col-6">
+                                <label class="small text-muted d-block mb-1">Lokasyon</label>
+                                <span class="text-dark">{{ item.location or '-' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if item.notes %}
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-body p-4 bg-warning bg-opacity-10 border border-warning rounded">
+                <h6 class="fw-bold text-dark mb-2"><i class="fa-regular fa-note-sticky me-2"></i>Notlar</h6>
+                <p class="mb-0 text-dark small">{{ item.notes }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <div class="col-lg-4">
+        
+        <div class="card border-0 shadow-sm mb-4 text-center">
+            <div class="card-body p-4">
+                <img src="{{ url_for('inventory.generate_qr', id=item.id) }}" class="img-fluid mb-3" style="max-width: 150px;">
+                <div class="small text-muted">Bu kodu taratarak ürün detaylarına mobilden ulaşabilirsiniz.</div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold text-dark">Belgeler</h6>
+                <button class="btn btn-sm btn-light border" onclick="$('#fileInput').click()"><i class="fa-solid fa-upload"></i></button>
+            </div>
+            <div class="card-body p-0">
+                <form id="uploadForm" action="{{ url_for('inventory.upload_document', item_id=item.id) }}" method="POST" enctype="multipart/form-data" class="d-none">
+                    <input type="file" name="file" id="fileInput" onchange="$('#uploadForm').submit()">
+                </form>
+
+                <ul class="list-group list-group-flush">
+                    {% for doc in item.documents %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-4 py-3">
+                        <div class="text-truncate me-2">
+                            <i class="fa-regular fa-file me-2 text-muted"></i>
+                            <a href="{{ url_for('inventory.download_document', filename=doc.filename) }}" class="text-decoration-none text-dark small fw-medium">{{ doc.filename }}</a>
+                        </div>
+                        <form action="{{ url_for('inventory.delete_document', doc_id=doc.id) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-link text-danger p-0 small"><i class="fa-solid fa-xmark"></i></button>
+                        </form>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item text-center text-muted small py-4">Belge yüklenmemiş.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="mb-0 fw-bold text-dark">İşlem Geçmişi</h6>
+            </div>
+            <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
+                <div class="list-group list-group-flush">
+                    {% for log in logs|reverse %}
+                    <div class="list-group-item px-4 py-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-bold text-dark small">{{ log.action }}</span>
+                            <small class="text-muted" style="font-size: 0.7rem;">{{ log.timestamp.strftime('%d.%m %H:%M') }}</small>
+                        </div>
+                        <p class="mb-1 text-muted small">{{ log.details }}</p>
+                        <small class="text-primary" style="font-size: 0.7rem;"><i class="fa-solid fa-user-pen me-1"></i>{{ log.performed_by }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-pen me-2"></i>Ürün Düzenle</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('inventory.edit_item', id=item.id) }}" method="POST">
+                <div class="modal-body p-4 bg-light">
+                    <ul class="nav nav-pills mb-4 nav-justified bg-white p-1 rounded border shadow-sm" id="editTab" role="tablist">
+                        <li class="nav-item"><button class="nav-link active fw-bold text-dark" data-bs-toggle="tab" data-bs-target="#edit-gen" type="button">Genel</button></li>
+                        <li class="nav-item"><button class="nav-link fw-bold text-dark" data-bs-toggle="tab" data-bs-target="#edit-fin" type="button">Finansal</button></li>
+                        <li class="nav-item"><button class="nav-link fw-bold text-dark" data-bs-toggle="tab" data-bs-target="#edit-loc" type="button">Lokasyon</button></li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="edit-gen">
+                            <div class="card card-body border-0 shadow-sm">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label class="form-label small fw-bold text-muted">Ürün Adı</label>
+                                        <input type="text" name="name" class="form-control text-dark" value="{{ item.name }}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold text-muted">Marka</label>
+                                        <select name="brand" class="form-select select2-modal text-dark">
+                                            {% for b in dropdowns.brands %}<option value="{{ b }}" {% if item.brand == b %}selected{% endif %}>{{ b }}</option>{% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold text-muted">Model</label>
+                                        <input type="text" name="model" class="form-control text-dark" value="{{ item.model }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold text-muted">Seri No</label>
+                                        <input type="text" name="serial_no" class="form-control font-monospace text-dark" value="{{ item.serial_no }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold text-muted">Durum</label>
+                                        <select name="status" class="form-select text-dark">
+                                            <option value="Aktif" {% if item.status == 'Aktif' %}selected{% endif %}>Aktif</option>
+                                            <option value="Depoda" {% if item.status == 'Depoda' %}selected{% endif %}>Depoda</option>
+                                            <option value="Arızalı" {% if item.status == 'Arızalı' %}selected{% endif %}>Arızalı</option>
+                                            <option value="Hurda" {% if item.status == 'Hurda' %}selected{% endif %}>Hurda</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="edit-fin">
+                            <div class="card card-body border-0 shadow-sm">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold text-muted">Fiyat</label>
+                                        <input type="number" step="0.01" name="price" class="form-control text-dark" value="{{ item.price }}">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label small fw-bold text-muted">Birim</label>
+                                        <select name="currency" class="form-select text-dark">
+                                            <option value="TL" {% if item.currency == 'TL' %}selected{% endif %}>TL</option>
+                                            <option value="USD" {% if item.currency == 'USD' %}selected{% endif %}>USD</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold text-muted">Tedarikçi</label>
+                                        <select name="vendor" class="form-select select2-modal text-dark">
+                                            {% for v in dropdowns.vendors %}<option value="{{ v }}" {% if item.vendor == v %}selected{% endif %}>{{ v }}</option>{% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold text-muted">Satın Alma</label>
+                                        <input type="text" name="purchase_date" class="form-control datepicker text-dark" value="{{ item.purchase_date }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold text-muted">Garanti</label>
+                                        <input type="text" name="warranty_date" class="form-control datepicker text-dark" value="{{ item.warranty_date }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="edit-loc">
+                             <div class="card card-body border-0 shadow-sm">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold text-muted">Zimmetli Kişi</label>
+                                        <input type="text" name="assigned_to" class="form-control text-dark" value="{{ item.assigned_to }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold text-muted">Departman</label>
+                                        <select name="department" class="form-select select2-modal text-dark">
+                                            {% for d in dropdowns.departments %}<option value="{{ d }}" {% if item.department == d %}selected{% endif %}>{{ d }}</option>{% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold text-muted">Lokasyon</label>
+                                        <select name="location" class="form-select select2-modal text-dark">
+                                            {% for l in dropdowns.locations %}<option value="{{ l }}" {% if item.location == l %}selected{% endif %}>{{ l }}</option>{% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label small fw-bold text-muted">Notlar</label>
+                                        <textarea name="notes" class="form-control text-dark" rows="3">{{ item.notes }}</textarea>
+                                    </div>
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer bg-white border-top-0">
+                    <button type="button" class="btn btn-light border text-dark" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold">Güncelle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold text-danger">Silme Onayı</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="fa-solid fa-triangle-exclamation text-danger fa-3x mb-3"></i>
+                <p class="text-dark mb-0"><strong>{{ item.name }}</strong> adlı ürünü silmek istediğinize emin misiniz?</p>
+                <p class="text-muted small">Bu işlem geri alınamaz.</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button" class="btn btn-light border" data-bs-dismiss="modal">İptal</button>
+                <form action="{{ url_for('inventory.delete_item', id=item.id) }}" method="POST">
+                    <button type="submit" class="btn btn-danger px-4">Evet, Sil</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#editModal').on('shown.bs.modal', function () {
+            $('.select2-modal').select2({ theme: 'bootstrap-5', tags: true, dropdownParent: $('#editModal') });
+        });
+        $('.datepicker').flatpickr({ locale: "tr", dateFormat: "Y-m-d", allowInput: true });
+    });
+</script>
+{% endblock %}

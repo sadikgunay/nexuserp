@@ -1,0 +1,155 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<style>
+    /* --- ÖZEL SAYFA STİLİ (Login & Register Ortak) --- */
+    
+    /* Layout Sıfırlama */
+    #sidebar-wrapper, .navbar { display: none !important; }
+    #page-content-wrapper { margin: 0 !important; padding: 0 !important; width: 100% !important; background: transparent !important; }
+    #wrapper { padding: 0 !important; margin: 0 !important; height: 100vh !important; width: 100% !important; }
+
+    /* Arka Plan */
+    .auth-bg {
+        min-height: 100vh;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8fafc;
+        background-image: 
+            radial-gradient(#e2e8f0 1px, transparent 1px),
+            radial-gradient(#e2e8f0 1px, transparent 1px);
+        background-size: 20px 20px;
+        background-position: 0 0, 10px 10px;
+        padding: 20px;
+    }
+
+    /* Kart Tasarımı */
+    .auth-card {
+        width: 100%;
+        max-width: 440px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid #e2e8f0;
+        border-radius: 24px;
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05);
+        padding: 3rem;
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+    
+    .auth-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 50px -10px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Logo & Başlık */
+    .auth-icon {
+        width: 64px;
+        height: 64px;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        margin: 0 auto 1.5rem;
+        box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Form Elemanları */
+    .form-floating > .form-control {
+        border: 2px solid #f1f5f9;
+        background-color: #f8fafc;
+        border-radius: 12px;
+        font-weight: 500;
+        color: #334155;
+    }
+    
+    .form-floating > .form-control:focus {
+        background-color: #fff;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+    
+    .form-floating > label {
+        color: #94a3b8;
+        padding-left: 1rem;
+    }
+
+    /* Buton */
+    .btn-auth {
+        background: #3b82f6;
+        color: white;
+        width: 100%;
+        padding: 1rem;
+        border-radius: 12px;
+        font-weight: 700;
+        border: none;
+        letter-spacing: 0.5px;
+        margin-top: 1rem;
+        transition: all 0.2s;
+    }
+    
+    .btn-auth:hover {
+        background: #2563eb;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Linkler */
+    .auth-link {
+        color: #3b82f6;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.2s;
+    }
+    .auth-link:hover { color: #1d4ed8; }
+
+</style>
+
+<div class="auth-bg">
+    <div class="auth-card">
+        
+        <div class="auth-icon">
+            <i class="fa-solid fa-cube"></i>
+        </div>
+        <h2 class="fw-bold text-dark mb-1">Hoş Geldiniz</h2>
+        <p class="text-muted mb-4 small">Nexus ERP hesabınıza giriş yapın.</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show p-2 small shadow-sm border-0 mb-4 rounded-3 text-start">
+                        <i class="fa-solid fa-circle-info me-2"></i> {{ message }}
+                        <button type="button" class="btn-close small" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <div class="form-floating mb-3">
+                <input type="text" name="username" class="form-control" id="uInput" placeholder="Kullanıcı Adı" required>
+                <label for="uInput"><i class="fa-regular fa-user me-2"></i>Kullanıcı Adı</label>
+            </div>
+            <div class="form-floating mb-4">
+                <input type="password" name="password" class="form-control" id="pInput" placeholder="Şifre" required>
+                <label for="pInput"><i class="fa-solid fa-lock me-2"></i>Şifre</label>
+            </div>
+            
+            <button type="submit" class="btn btn-auth">
+                Giriş Yap <i class="fa-solid fa-arrow-right-to-bracket ms-2"></i>
+            </button>
+        </form>
+
+        <div class="mt-4 pt-3 border-top border-light">
+            <p class="text-muted small mb-0">
+                Hesabınız yok mu? <a href="{{ url_for('auth.register') }}" class="auth-link">Kayıt Olun</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

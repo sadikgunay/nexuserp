@@ -1,0 +1,117 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 fw-bold text-dark">Profilim</h1>
+            <p class="text-muted small mb-0">Hesap bilgilerinizi ve güvenliğinizi yönetin.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        
+        <div class="col-12 col-lg-4">
+            <div class="card border-0 shadow-sm h-100 text-center p-4">
+                <div class="card-body">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3 shadow-sm" 
+                         style="width: 100px; height: 100px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; font-size: 2.5rem; font-weight: 700;">
+                        {{ current_user.username[0]|upper }}
+                    </div>
+                    
+                    <h4 class="fw-bold mb-1">{{ current_user.username }}</h4>
+                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill mb-4">
+                        {{ current_user.role|upper }}
+                    </span>
+                    
+                    <hr class="opacity-10 my-4">
+
+                    <div class="text-start">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-success bg-opacity-10 p-2 rounded-circle me-3 text-success">
+                                <i class="fa-solid fa-building-flag"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block" style="font-size: 0.7rem;">BAĞLI KURUM</small>
+                                <span class="fw-bold text-dark">{{ current_user.institution.name or 'İsimsiz Kurum' }}</span>
+                                <small class="text-muted ms-1">({{ current_user.institution.code }})</small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-light p-2 rounded-circle me-3 text-primary">
+                                <i class="fa-regular fa-envelope"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block" style="font-size: 0.7rem;">E-POSTA</small>
+                                <span class="fw-medium">{{ current_user.email or 'Belirtilmemiş' }}</span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="bg-light p-2 rounded-circle me-3 text-primary">
+                                <i class="fa-solid fa-phone"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block" style="font-size: 0.7rem;">TELEFON</small>
+                                <span class="fw-medium">{{ current_user.phone or 'Belirtilmemiş' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="mb-0 fw-bold"><i class="fa-solid fa-user-pen me-2 text-primary"></i>Bilgileri Düzenle</h6>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">Kullanıcı Adı</label>
+                                <input type="text" class="form-control" name="username" value="{{ current_user.username }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">Rol</label>
+                                <input type="text" class="form-control bg-light" value="{{ current_user.role|upper }}" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">E-Posta</label>
+                                <input type="email" class="form-control" name="email" value="{{ current_user.email or '' }}" placeholder="ornek@sirket.com">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">Telefon</label>
+                                <input type="text" class="form-control" name="phone" value="{{ current_user.phone or '' }}" placeholder="+90 5XX XXX XX XX">
+                            </div>
+                        </div>
+
+                        <hr class="my-4 opacity-10">
+                        <h6 class="mb-3 fw-bold"><i class="fa-solid fa-lock me-2 text-primary"></i>Şifre Değiştir (İsteğe Bağlı)</h6>
+
+                        <div class="row g-3">
+                             <div class="col-md-6">
+                                <label class="form-label small text-muted">Mevcut Şifre</label>
+                                <input type="password" class="form-control bg-light" name="current_password" placeholder="••••••••">
+                                <div class="form-text small">Şifre değiştirmek için mevcut şifrenizi girmelisiniz.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">Yeni Şifre</label>
+                                <input type="password" class="form-control" name="new_password" placeholder="••••••••">
+                            </div>
+                        </div>
+
+                        <div class="mt-4 text-end">
+                            <button type="submit" class="btn btn-primary px-4 py-2">
+                                <i class="fa-regular fa-floppy-disk me-2"></i>Değişiklikleri Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

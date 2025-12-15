@@ -1,0 +1,87 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h3 class="fw-bold"><i class="fa-solid fa-sliders me-2"></i>Sistem Ayarları</h3>
+        <p class="text-muted">Dropdown menülerde görünecek seçenekleri buradan yönetebilirsiniz.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-3">
+        <div class="list-group shadow-sm" id="settings-list" role="tablist">
+            <a class="list-group-item list-group-item-action active fw-bold" data-bs-toggle="list" href="#brands">
+                <i class="fa-solid fa-copyright me-2"></i>Markalar
+            </a>
+            <a class="list-group-item list-group-item-action fw-bold" data-bs-toggle="list" href="#categories">
+                <i class="fa-solid fa-layer-group me-2"></i>Kategoriler
+            </a>
+            <a class="list-group-item list-group-item-action fw-bold" data-bs-toggle="list" href="#departments">
+                <i class="fa-solid fa-building-user me-2"></i>Departmanlar
+            </a>
+            <a class="list-group-item list-group-item-action fw-bold" data-bs-toggle="list" href="#locations">
+                <i class="fa-solid fa-map-location-dot me-2"></i>Lokasyonlar
+            </a>
+            <a class="list-group-item list-group-item-action fw-bold" data-bs-toggle="list" href="#vendors">
+                <i class="fa-solid fa-truck-fast me-2"></i>Tedarikçiler
+            </a>
+        </div>
+    </div>
+
+    <div class="col-md-9">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4 tab-content">
+                
+                {% macro settings_panel(id, title, type_key, items) %}
+                <div class="tab-pane fade {% if id == 'brands' %}show active{% endif %}" id="{{ id }}">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold mb-0 text-primary">{{ title }}</h5>
+                    </div>
+
+                    <form action="{{ url_for('settings.add_choice') }}" method="POST" class="row g-2 mb-4 align-items-end">
+                        <input type="hidden" name="type" value="{{ type_key }}">
+                        <div class="col-md-9">
+                            <label class="small text-muted fw-bold">Yeni {{ title }} Ekle</label>
+                            <input type="text" name="name" class="form-control" placeholder="Örn: Yeni Seçenek" required>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-success w-100"><i class="fa-solid fa-plus me-1"></i> Ekle</button>
+                        </div>
+                    </form>
+
+                    <hr>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light"><tr><th>Adı</th><th class="text-end">İşlem</th></tr></thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr>
+                                    <td class="fw-bold">{{ item.name }}</td>
+                                    <td class="text-end">
+                                        <form action="{{ url_for('settings.delete_choice', id=item.id) }}" method="POST" onsubmit="return confirm('Silmek istediğine emin misin?');">
+                                            <button class="btn btn-sm btn-outline-danger border-0"><i class="fa-solid fa-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="2" class="text-center text-muted py-3">Henüz kayıt eklenmemiş.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endmacro %}
+
+                {{ settings_panel('brands', 'Marka', 'brand', data.brands) }}
+                {{ settings_panel('categories', 'Kategori', 'category', data.categories) }}
+                {{ settings_panel('departments', 'Departman', 'department', data.departments) }}
+                {{ settings_panel('locations', 'Lokasyon', 'location', data.locations) }}
+                {{ settings_panel('vendors', 'Tedarikçi', 'vendor', data.vendors) }}
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
